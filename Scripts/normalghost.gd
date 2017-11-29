@@ -14,6 +14,13 @@ func _ready():
 	connect("body_enter", self, "_body_enter")
 	
 func _fixed_process(delta):
+	if get_pos().x > 800 or get_pos().x < (-32):
+		get_node("/root/World").add_normal_ghost()
+		queue_free()
+	if get_pos().y > 640 or get_pos().y < (-32):
+		get_node("/root/World").add_normal_ghost()
+		queue_free()
+	
 	if get_node("/root/World").is_playing == true:
 		var bodies = get_colliding_bodies()
 		for body in bodies:
