@@ -21,40 +21,41 @@ func _ready():
 	body_part_array.push_back(body_part)
 
 func _fixed_process(delta):
-	var bodies = get_colliding_bodies()
-	
-	for body in bodies:
-		if body.is_in_group("body"):
-			dead = true
-		if body.is_in_group("walls") or body.is_in_group("ghosts"):
-			dead = true
-		if body.is_in_group("food"):
-			body_length += 1
-			body.queue_free()
-			get_node("/root/World").spawn_food()
-	
-	dt += delta
-	if dt > MOVE_TIME and not dead:
-		dt -= MOVE_TIME
-		var body_part = BODY_SCENE.instance()
-		body_part.set_pos(get_pos())
-		body_part.add_to_group("body")
-		body_part.id = incID
-		incID += 1
-		get_parent().add_child(body_part)
-		body_part_array.push_back(body_part)
-		while body_part_array.size() > body_length:
-			body_part_array[0].queue_free()
-			body_part_array.pop_front()
+	if get_node("/root/World").is_playing == true:
+		var bodies = get_colliding_bodies()
 		
-		if move_dir == KEY_W:
-			set_pos(get_pos() - Vector2(0, GRID))
-		if move_dir == KEY_S:
-			set_pos(get_pos() + Vector2(0, GRID))
-		if move_dir == KEY_A:
-			set_pos(get_pos() - Vector2(GRID, 0))
-		if move_dir == KEY_D:
-			set_pos(get_pos() + Vector2(GRID, 0))
+		for body in bodies:
+			if body.is_in_group("walls") or body.is_in_group("ghosts") or body.is_in_group("body"):
+				dead = true
+				get_node("/root/World").set_death()
+			if body.is_in_group("food"):
+				body_length += 1
+				get_node("/root/World").set_score(body_length)
+				body.queue_free()
+				get_node("/root/World").spawn_food()
+		
+		dt += delta
+		if dt > MOVE_TIME and not dead:
+			dt -= MOVE_TIME
+			var body_part = BODY_SCENE.instance()
+			body_part.set_pos(get_pos())
+			body_part.add_to_group("body")
+			body_part.id = incID
+			incID += 1
+			get_parent().add_child(body_part)
+			body_part_array.push_back(body_part)
+			while body_part_array.size() > body_length:
+				body_part_array[0].queue_free()
+				body_part_array.pop_front()
+			
+			if move_dir == KEY_W:
+				set_pos(get_pos() - Vector2(0, GRID))
+			if move_dir == KEY_S:
+				set_pos(get_pos() + Vector2(0, GRID))
+			if move_dir == KEY_A:
+				set_pos(get_pos() - Vector2(GRID, 0))
+			if move_dir == KEY_D:
+				set_pos(get_pos() + Vector2(GRID, 0))
 
 func _input(event):
 	if event.type == InputEvent.KEY and event.pressed == true:
@@ -74,5 +75,6 @@ func shorten_snake(part_id):
 		if body_part.id <= part_id:
 			culled += 1
 	body_length -= culled
-	for i in range(times_hit + 1):
+	get_node("/root/World").set_score(body_length)
+	for i in range(2):
 		get_node("/root/World").add_normal_ghost()
